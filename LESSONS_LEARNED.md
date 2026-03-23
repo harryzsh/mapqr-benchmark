@@ -33,3 +33,42 @@ Check MapPublicIpOnLaunch before launching. Private subnets have no public IP.
 
 ## 9. Never share credentials in chat
 Revoke any accidentally shared tokens immediately at https://github.com/settings/tokens
+
+## 10. Use Docker for old research code on modern CUDA systems
+
+**Problem**: MapQR requires CUDA 11.x (runtime + compiler) but DLAMI has CUDA 12.4.
+conda cudatoolkit provides runtime libs only - no nvcc compiler.
+Result: mmdet3d CUDA ops fail to compile with "CUDA version mismatch" error.
+
+**Fix**: Use Docker with the matching PyTorch image:
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 11.6.2
+
+Container image Copyright (c) 2016-2022, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+Inside the container: CUDA 11.6 runtime + nvcc compiler = no mismatch.
+Host CUDA 12.4 driver still talks to GPU hardware (backward compatible).
+GPU performance is identical to bare metal - no overhead.
+
+## 11. av2 package pulls in torch 2.x - install with --no-deps
+
+Collecting av2
+  Downloading av2-0.3.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.7 kB)
+Downloading av2-0.3.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (15.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.2/15.2 MB 76.0 MB/s  0:00:00
+Installing collected packages: av2
+Successfully installed av2-0.3.6
+
+## 12. mmcv-full 1.x prebuilt wheels only exist for Python 3.7/3.8
+
+For Python 3.9+, you must build from source - which requires matching nvcc.
+This is why Docker (with Python 3.8 base image) is the cleanest solution.
